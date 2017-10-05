@@ -1,0 +1,144 @@
+---
+title: "Logistic Regression"
+author: "Hu Yang"
+date: "September 29, 2017"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SimmonsResearchR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+This R package provides a pipeline to automatically build logistic regression models. Data pre-processing, variable selection, model building, diagnosis and deployments are all included.
+
+Five functions related to logistic regression modeling are included in the package:
+
+- **lrm_model** Automatically fit binary logistic regression models using MLE or penalized MLE.
+- **combine_lrm_models** Combine Logistic Regression Models.
+- **save_model_excel** Save models to spreadsheet.
+- **score_model_data** Model Deployment: Score model data.
+- **score_new_data** Model Deployment: Score the new data based on the model.
+
+**Examples:**
+
+Load the libraries.
+
+```{r, message=FALSE}
+
+library(dplyr)
+library(tidyr)
+library(rms)
+library(stringr)
+library(SimmonsResearchR)
+
+```
+
+Load the data.
+
+```{r}
+
+data(modeldata)
+
+#There are 5 dependent variables
+DVList <- c("B_AUTOMOTIVE_GENS_MAKE_NETS_10459_Any_ChevroletGeo", 
+            "B_AUTOMOTIVE_GENS_MAKE_NETS_10459_Any_Ford", 
+            "B_AUTOMOTIVE_GENS_MAKE_NETS_10459_Any_Honda", 
+            "B_AUTOMOTIVE_GENS_MAKE_NETS_10459_Any_Nissan", 
+            "B_AUTOMOTIVE_GENS_MAKE_NETS_10459_Any_Toyota")
+
+```
+Pre-Processing: Several ways are included to pre-process the predictor data. It assumes that all of the data are numeric.
+
+- Identifying correlated predictors. In general, there are good reasons to avoid data with highly correlated predictors. First, redundant predictors frequently add more complexity to the model, also they can result in highly unstable models, numerical errors and degraded predictive performance. 
+
+- Near Zero-Variance predictors. These predictors might have only a handful of unique values that occur with very low frequencies. To identify these type of predictors, the following two metices can be calculated:
+    - The frequency of the most prevalent value over the second most frequent value (called the "frequency ratio"), which would be near one for well-behaved predictors and very large for highly-unbalanced data and 
+    - The "percent of unique values" is the number of unique values divided by the total number of samples (times 100) that approaches zero as the granuarity of the data increases.
+    - If the frequency ratio is larger than a pre-specified threshold and the unique value percentage is less than a threshold, we might consider a predictor to be near zero-variance. 
+
+As the first step, We use demo variables only to build the logistic regression models. Here we want to keep all the demo variables in the model, all option is set to TRUE.
+
+```{r}
+
+DemoVars <- c('Gender','respmar2','employ','incmid','parent','own','agemid','race1',
+              'race2','race3','educat1','educat2','educat3')
+
+model.demo <- lrm_model(data=modeldata, DVList=DVList, IDVList=DemoVars, all=TRUE)
+
+```
+
+and save the models information to a spreadsheet. 
+
+```{r, eval = FALSE}
+
+save_models_excel(model.demo, out="demo.xlsx")
+
+```
+
+We need to use DT variables as well, there are 265 DT Variables
+
+```{r}
+
+DTVars <- names(modeldata %>% slice(1) %>%
+                  select(starts_with("DT")))
+
+length(DTVars)
+
+model.dt <- lrm_model(data=modeldata, DVList=DVList, IDVList=DTVars)
+
+```
+
+There are 570 Psychographic variables. If we run them at one time, it may take too long, so we divide all 570 Psychographics into 3 groups and run them separately.
+
+
+```{r, message=FALSE}
+PsycoVars <- names(modeldata %>% slice(1) %>%
+                     select(Apparel_5605_1:Views_7650_78))
+length(PsycoVars)
+
+# divide 570 Psycovars into 3 groups
+PsycoVars1 <- PsycoVars[1:200]
+PsycoVars2 <- PsycoVars[201:400]
+PsycoVars3 <- PsycoVars[401:570]
+
+model.Psyco1 <- lrm_model(data=modeldata, DVList=DVList,IDVList=PsycoVars1)
+model.Psyco2 <- lrm_model(data=modeldata, DVList=DVList,IDVList=PsycoVars2)
+model.Psyco3 <- lrm_model(data=modeldata, DVList=DVList,IDVList=PsycoVars3)
+
+```
+
+Next step is to combine all three Psycographic models together
+
+```{r, message=FALSE}
+
+model.Psyco12 <- combine_lrm_models(data=modeldata, model.Psyco1, model.Psyco2)
+model.Psyco123 <- combine_lrm_models(data=modeldata, model.Psyco12, model.Psyco3)
+
+```
+
+In the same way, combine Psychographic and DT models together to get the final model. Because we need to include all the demo variables in the models, so we set Included = DemoVars.
+
+```{r}
+
+model.final <- combine_lrm_models(data=modeldata, model.dt, model.Psyco123, Included=DemoVars)
+
+```
+
+```{r, eval = FALSE}
+
+save_models_excel(model.final, out="modelfinal.xlsx")
+
+```
+
+The last step is model deployment. We use the models to score the modeling base to calculate probabilities and new segments. Of course, the models can be applied to new data for scoring as well.
+
+```{r, eval = FALSE}
+model.final.score <- score_model_data(model = model.final, newdata = modeldata, ID = "BOOK_ID", cutoff = 0.1, file = "modelscores.xlsx") 
+
+```
+

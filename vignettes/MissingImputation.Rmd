@@ -1,0 +1,83 @@
+---
+title: "SimmonsResearchR"
+author: "Hu Yang"
+date: "August 28, 2017"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SimmonsResearchR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Missing Imputation
+
+**Multiple imputation** is a method for analyzing incomplete multivariate data.  [Amelia II](<https://gking.harvard.edu/amelia>) (Multiple Imputation of Incomplete Multivariate Data) is a R package which allows users to impute ("fill in" or rectangularize) incomplete data sets so that analyses which require complete observations can appropriately use all the information present in a dataset with missingness, and avoid the biases, ineﬃciencies, and incorrect uncertainty estimates that can result from dropping all partially observed observations from the analysis.
+
+This package include a function to wrap the functinos in Amelia package to automate the MI prcodures required by Simmons Research. Compared to Amelia package, our new function has the following features:
+
+- The function provides preprocessing before missing imputation, such as data check, variables inspection, and postprocessing after imputation such as output the average of all imputed datasets.
+- Based on our specific requirement, the new function provides multiple layers of the MI options so that the lower layer options can keep on running if the higher layer options fail, which is very flexible. If use Amelia package to generate the same results, we have to change the setting and rerun manually which takes longer and hard to combine the final results in the same dataset.
+- Based on our specific requirement, the new function can run MI across the modules in the data. The missing imputation is conducted in the same module defined by a grouping variable. It is hard to do so and combine results together by using Amelia package alone if we have many modules (for example > 200).
+- Suppress some unnecessary processing used in Amelia. For example, Amelia always do bootstrapping to estimate the distributions of the variables. For a variable with very small portion of missings, say < 1%, we cannot gurrantee Amelia will pick those missing obervations. If not, Amelia will ignore that variable without any imputation. We suppress this behavior in the new function to make sure all the missing variables are imputed.
+- Additional minors upgrades to speed up the MI procedure.
+
+
+One function related to missing imputation are included in the package:
+
+- **amelia_impute** Missing imputation with Amelia.
+
+Examples:
+
+```{r, message=FALSE}
+
+library(dplyr)
+library(Amelia)
+library(SimmonsResearchR)
+
+```
+
+Load the data.
+
+```{r}
+
+data(magdwt)
+summary(magdwt)
+
+```
+
+We want to impute the missing AT variables.
+
+```{r}
+
+imputed1 <- amelia_impute(data = magdwt, ID = "RESPID", m = 5, rounded = TRUE)
+
+```
+
+All the data except the ID will be used for the missing imputation. We may want to assign the variables to be imputed (dependent variables) and the variables used for the imputation (independent variables)
+
+```{r}
+
+imputed.vars <- paste0("AT", 1:10)
+indep.vars <- c(paste0("d",4:6), paste0("d28_",10:26))
+
+imputed2 <- amelia_impute(data = magdwt, ID = "RESPID", m = 5, rounded = TRUE, imputed.vars = imputed.vars, indep.vars = indep.vars)
+
+```
+
+We can also include a grouping variable, all the observations falling in the same group will be in the same MI session. If the MI fails, the function can adopt fewer variables defined in indep.vars2 to rerun the procedures.
+
+```{r}
+
+imputed.vars <- paste0("AT", 1:10)
+indep.vars <- c(paste0("d",4:6), paste0("d28_",10:26))
+indep.vars2 <- c(paste0("d",4:6))
+
+#if MI fails, rerun using variables in indep.vars2
+#grouping the obs into segments using MAG variable before IM
+imputed2 <- amelia_impute(data = (magdwt %>% filter(MAG<=10)), ID = "RESPID", m = 5, rounded = TRUE, imputed.vars = imputed.vars, indep.vars = indep.vars, indep.vars2 = indep.vars2, by.vars = "MAG")
+
+```

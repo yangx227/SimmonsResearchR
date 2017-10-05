@@ -1,0 +1,125 @@
+---
+title: "Sample Balancing"
+author: "Hu Yang"
+date: "`r Sys.Date()`" 
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SimmonsResearchR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Sample Balancing
+
+The goal of the “**Sample Balancing**” module is to provide a weight for each respondent in the sample such that the weighted marginals on each of a set of characteristics matches preset values of those marginals. This process is sometimes called “raking” or “rim weighting.” 
+
+The most common procedure used to produce these weights is “*iterative proportional fitting*”, a procedure devised by *W. Edwards Deming* and *Frederick F. Stephan*, which is the current algorithm used by Simmons. 
+
+The new functions are based on current sample balancing functions used at Simmons, but with lots of modifications. Compared to original version, the new features include:
+
+- Originally, we need to hard copy target weights, labels, names to R codes, which is very tedious when lots sample balancing modules involved. Now the new functions can read those information directly from a spreadsheet (see the layout below) which makes the data input more efficient and avoid mistakes.
+
+- Originally, algorithm only uses 6 times mean as the cap. Now new functions can use n times mean plus mean +/- (n times std) as the caps.
+
+- A randomization option provided. We can choose to randomize the data based on ID before sample balancing.
+
+- A new function called `sample_balance_init` encapusulates the data preprocessing steps, which simplfys the codes of sample balancing process, and avoid some unnecessary steps such as ID, weights have to be positioned in certain columns.
+
+- New functions can output the results of sample balancing automatically to spreadsheet which avoids lots of unnecessary copy/paste works.
+
+- Lots of additional minor modifications.
+
+
+Two functions related to sample balancing are included in the package:
+
+- **sample_balance_init** Initialize sample balance process.
+
+- **sample_balance** Run sample balance module by iterative raking algorithm.
+
+**Examples**:
+```{r, eval = FALSE}
+# load the libraries
+library(haven)
+library(dplyr)
+library(openxlsx)
+library(SimmonsResearchR)
+```
+
+```{r, eval = FALSE}
+
+# read the data
+DatIn <- read_sav("W50123 AdultMasterDemoFile SB v2.sav") %>%
+  filter(WAVE_ID %in% c('1516', '1616'))
+
+# read targ file which is a spreadsheet contains targ information
+targ <- read.xlsx("targ.xlsx")
+
+# subset the data
+work1.new <- DatIn %>%
+  filter(group==1,
+         dma %in% c(501, 504, 505, 506, 510, 511, 524, 528, 602, 618, 623, 641, 803, 807))
+
+work2.new <- DatIn %>%
+  filter(group==3,
+         dma %in% c(501, 504, 505, 506, 510, 511, 524, 528, 602, 618, 623, 641, 803, 807)) 
+
+work1.wgt <- work1.new[["DESIGN_WGT"]] /2 
+work2.wgt <- work2.new[["DESIGN_WGT"]] /2 
+
+# Initialize sample balance, save targ information to plan text file
+targs.list <- sample_balance_init(data=DatIn, targ=targ, out="targ.txt")
+
+# sample balancing using 6 times mean cap, and save diagnosis information to out1.xlsx
+sb1 <- sample_blance(data=work1.new, 
+                     ID="BOOK_ID",
+                     targstr=targs.list[[1]],
+                     dweights=work1.wgt,
+                     cap=T,
+                     typeofcap=1,
+                     capval=6,
+                     floor=T,
+                     floorval=50,
+                     eps=.001,
+                     rounding=F,
+                     klimit=F,
+                     klimitval=Inf, 
+                     out="out1.xlsx")
+
+# sample balancing using 2 times std cap, and save diagnosis information to out2.xlsx
+sb2 <- sample_blance(data=work2.new, 
+                     ID="BOOK_ID",
+                     targstr=targs.list[[2]],
+                     dweights=work2.wgt,
+                     cap=T,
+                     typeofcap=2,
+                     capval=2,
+                     floor=T,
+                     floorval=50,
+                     eps=.001,
+                     rounding=F,
+                     klimit=F,
+                     klimitval=Inf, 
+                     out="out2.xlsx")
+
+# Get new capped weights from the 2 sample balancing modules
+cap_wgt1<-sb1[[2]]
+cap_wgt2<-sb2[[2]]
+
+```
+
+**Note**: 
+
+- because the raking algorithm is an iterative algorithm, when we change the order of each obs in the dataset or the order of raking variables, the output of new weights will be slightly different.
+
+- because new weight vector is keep on updating in each iteration. So even the final weight vector's maximum value is caped, it's minimum value may not be the same as the minimum of the original weights if no minimum limitation applied or the minimum value is larger than the minimum limitation.
+
+
+**Example** of the targ spreadsheet is listed below. `Age`, `race`, `F6A10A`, `F10A3P`, `F3P7P`, `S6A12A`, `M-S Prime` and `M-S All Day` are used as sample balancing variables. There are 4 sample balancing modules to be conducted.
+
+```{r results='asis', echo = FALSE}
+ library(SimmonsResearchR)
+
+ data(targ)
+
+ knitr::kable(targ, caption = "Example of the Targ Spreadsheet") 
+```

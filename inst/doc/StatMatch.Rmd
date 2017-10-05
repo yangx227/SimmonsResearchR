@@ -1,0 +1,221 @@
+---
+title: "SimmonsResearchR"
+author: "Hu Yang"
+date: "`r Sys.Date()`" 
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SimmonsResearchR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Stat Match
+
+**Statistical matching techniques** aim at integrating two or more data sources (usually data from sample surveys) referred to the same target population. The final objective is that of studying the relationship of variables not jointly observed in a single data sources. The integration can be performed at micro (a synthetic of fused file is the output) or macro level (estimates of correlations, regression coefficients, contingency tables are required).
+
+The package includes the functions to wrap the functions in [StatMatch package](https://cran.r-project.org/web/packages/StatMatch/index.html) to automate the statistical matching procedures required by Simmons Research. Although the package wraps the functions in StatMatch package, it is not just a wrapper. Compared to StatMatch package, our new functions have the following features:
+
+- In StatMatch package, several functions such as `pw.assoc` and `spearman2` are provided to screen the match variables. But they only work for univariable. If we have multiple matching variables, we have to run those functions one by one manually, which is very tedious, let alone if there are more than 20-30 candidate variables. Our new functions provide a new pipeline based on `OLS` which can select optimal subset of the candidate matching variables and output the results spreadsheet automatically.
+- Based on our specific requirement, the new functions provide multiple layers of the hard matching options so that the lower layer options can keep on running if the higher layer options fail, which is very flexible. In StatMatch package, to generate the same results, we have to change the setting and rerun manually which takes longer and hard to combine the final results in the same dataset.
+- Based on our specific requirement, the new functions can run stat matching across the corresponding modules in both recipients and donors. The matching is conducted in the same module defined by a module variable. It is hard to do that and combine results together by using StatMatch package alone if we have many modules (for example > 200).
+- The new functions provide the way running stat matching parallelly which can speed up the whole process. In StatMatch package, all the process have to run serially.
+- StatMatch package sometimes output very strange messages, the new function suppress the output of those messages.
+
+Two functions related to statistical matching are included in the package:
+
+- **stat_match** Statistical matching with StatMatch.
+- **vars_redun_ols** The choice of the optimal matching variables based on OLS.
+- **donor_data_append** Append assigned attributes from the donor file to the fused data.
+
+The following are the pipeline of the algorithms in the package for the statistical matching.
+
+```{r, message=FALSE}
+
+library(dplyr)
+library(StatMatch)
+library(dummies)
+library(rms)
+library(SimmonsResearchR)
+
+```
+
+Load the spss data and subset it into the recipient and donor data.
+
+```{r}
+
+data(mag)
+
+# select MAG vehicles (MAG<=10) for testing
+rec <- mag %>% filter(type==1, MAG<=10)
+don <- mag %>% filter(type==0, MAG<=10)
+
+```
+
+**Practical steps in an application of statistical matching:** 
+
+Before applying SM methods in order to integrate two or more data sources, some preprocessing steps are required.
+
+Identification of all the common variables shared by recipient and donor data. Theoritically, all the common variables can be used as the match variables. But considering the statistical/business meaning and too many matching variables can increase the complexity of the problem and potentially affect negatively the results of SM, we should limit the matching variables to the optimal subset of the common variables which can carry out a "multivariate sense". In other words, the final matching variables should be very relavant to the variables need to be fused from donors to recipients, and contain no redundant information.
+
+After inital screening of the common variables, we have the following common variables as the candidates of the matching variables:
+  
+```{r}
+
+match.vars   = c("NFAC1_2", "NFAC2_2", "NFAC3_2", "NFAC4_2", 
+                 "childhh","agemid", "incmid", "ethnic", 
+                 "maritalstat", "educat", "homestat", 
+                 "employstat", "dvryes", "cabdsl")
+
+```  
+
+The variables need to be fused from the donor data are:
+    
+```{r}
+
+DVList <- names(mag %>% select(starts_with("AT")))
+DVList
+      
+```  
+
+We then use OLS to model those attributes in DVList by using match.vars as the independent variables. For those match.vars which appears the most in all AT models, they are more relavant to the data we need to fuse to the recipients. 
+
+Divide the matching variables into factors and continuous variables. Dummy variables will be generated for those factors.
+
+```{r}
+
+match.var.factor <- c("NFAC1_2", "NFAC2_2", "NFAC3_2", "NFAC4_2", "NFAC5_2", "NFAC6_2", "NFAC7_2", "childhh", "ethnic", "maritalstat",                       "educat", "homestat", "employstat", "dvryes", "cabdsl")
+
+match.var.num <- c("agemid", "incmid")
+
+#change the types of the matching variables, only factors will be used to generate dummy variables
+don <- don %>%
+  mutate_at(vars(match.var.factor), as.factor) %>%
+  mutate_at(vars(match.var.num), as.numeric) %>%
+  mutate_at(vars(DVList), as.numeric) %>%
+  select(DVList, match.var.factor, match.var.num)
+    
+``` 
+
+Generate dummy variables:
+
+```{r}
+
+don.new <- dummy_recodes(don, drop=TRUE, all=TRUE)
+
+#output the variables for OLS
+IDVListData <- don.new %>%
+  select(setdiff(names(don.new), c(DVList))) %>%
+  slice(1)
+
+IDVList <- names(IDVListData)
+IDVList
+
+```  
+
+Run OLS models to select matching variables
+
+```{r}
+
+results <- vars_redun_ols(data=don.new, DVList = DVList, IDVList = IDVList)
+
+knitr::kable(results, caption = "Variables Importance") 
+      
+``` 
+
+Based on the `Variable Importance` above, we many consider remove "educat", "homestat", "ethnic", "cabdsl" and "incmid" from the matching variable list. The new matching variables are:
+
+```{r}
+
+match.vars   = c("NFAC1_2", "NFAC2_2", "NFAC3_2", "NFAC4_2", 
+                 "childhh","agemid", "maritalstat", "employstat", "dvryes")
+
+``` 
+
+After select the optimal matching variables, we can run stat_match directly:
+
+```{r}
+
+rec <- mag %>% filter(type==1, MAG<=10)
+don <- mag %>% filter(type==0, MAG<=10)
+
+system.time(out.nnd.c <- stat_match(data.rec=rec,
+                         data.don=don,
+                         rec.id="BOOK_ID",
+                         don.id="RESPID", 
+                         match.vars=match.vars,
+                         don.class=c("age", "gender", "WhiteNH"),
+                         k = 50,
+                         constrained=T))
+
+table(out.nnd.c$MatchLevel)
+      
+``` 
+
+Or we can run stat_match in a hierarchy way. During the process of stat matching, our (Simmons Stat) criterias require three levels hard matching options (Options can be changed based on requirements):
+  
+- Option 1: Gender (1=Male, 2=Female), Age (1=18-34, 2=35-54, 55+), WhiteNH (1=White & non-Hispanic, 2=Other).
+- Option 2: Gender (1=Male, 2=Female), Age (1=18-34, 2=35-54, 55+).
+- Option 3: Gender (1=Male, 2=Female).
+
+and the functions run through all the following steps:
+  
+- Run stat match with primary common variable (option 1) with constrain, if successful, return the matched data.
+- If above step fails, rerun stat match with primary common variable (option 2) with constrain, if successful, return the matched data.
+- If above step fails, rerun stat match with primary common variable (option 2) without constrain, if successful, return the matched data.
+- If above step fails, use Gender (option 3) as the primary common variable and rerun without constrain.
+- If above steps fail, random select donors to the recipents (This rarely happens).
+
+
+```{r}
+
+group.v = c("age", "gender", "WhiteNH")
+group.v2 = c("age", "gender")
+group.v3 = c("gender")
+
+system.time(out.nnd.c <- stat_match(data.rec=rec,
+                         data.don=don,
+                         rec.id="BOOK_ID",
+                         don.id="RESPID", 
+                         match.vars=match.vars,
+                         don.class=group.v,
+                         don.class2=group.v2,
+                         don.class3=group.v3,
+                         k = 50,
+                         constrained=T))
+
+table(out.nnd.c$MatchLevel)     
+
+``` 
+
+Based on my experience, the main reason the stat match fails is because the ratio of recipients Vs. donors in the segments defined by hard matching options is too high. When we use low level hard matching options, the ratio would decrease which make the stat matching more likely to be successful.
+
+On top of the above, a module variable (by.var) can be added so that stat match can run across the corresponding modules in both recipients and donors. The matching is conducted in the same module defined by by.var.
+
+```{r}
+
+system.time(out.nnd.c <- stat_match(data.rec=rec,
+                         data.don=don,
+                         rec.id="BOOK_ID",
+                         don.id="RESPID", 
+                         match.vars=match.vars,
+                         don.class=group.v,
+                         don.class2=group.v2,
+                         don.class3=group.v3,
+                         by.var = "MAG",
+                         k = 50,
+                         constrained=T))
+
+table(out.nnd.c$MatchLevel)
+      
+``` 
+
+As we can see, 6480 recipients match to the donors at level 1 (group.v), and 3072 recipients match to the donors at level 2 (group.v2).
+
+After establishing the relationship between recipients and donors based on stat matching, we can then fuse the dependent variables from the donors to the recipients.
+
+```{r}
+
+out <- append_donor_data(data.fuse=out.nnd.c, data.don=don, by=c("RESPID","MAG"), vars=DVList)
+glimpse(out.nnd.c)
+
+``` 

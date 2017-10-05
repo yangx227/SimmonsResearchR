@@ -1,0 +1,17 @@
+Warning: The  Manhattan  distance is being used
+All the categorical matching variables in rec and don 
+ data.frames, if present are recoded into dummies
+Warning: the number of donors is less than 
+ the number of recipients
+Warning: the number of donors is less than 
+ the number of recipients
+Warning: the number of donors is less than 
+ the number of recipients
+Warning: the number of donors is less than 
+ the number of recipients
+Warning: the number of donors is less than 
+ the number of recipients
+Warning: the number of donors is less than 
+ the number of recipients
+Warning: the number of donors is less than 
+ the number of recipients

@@ -1,0 +1,31 @@
+Package: SimmonsResearchR
+Type: Package
+Title: An implementation of R functions used in Stat team.
+Version: 0.1.4
+Author: Hu Yang
+Maintainer: Hu Yang <hyang@simmonsresearch.com>
+Description: This package includes statistical R routines frequently used in Stat team at Simmons Research.
+Depends: R (>= 3.4.1)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/yangx227/SimmonsResearchR
+BugReports: https://github.com/yangx227/SimmonsResearchR
+Imports:
+  haven,
+  dplyr (>= 0.7.2),
+  tidyr,
+  StatMatch,
+  stringr,
+  Amelia,
+  openxlsx,
+  scales,
+  weights,
+  dummies,
+  rms,
+  caret
+RoxygenNote: 6.0.1
+Suggests: testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

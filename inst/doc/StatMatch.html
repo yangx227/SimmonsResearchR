@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Hu Yang" />
+
+<meta name="date" content="2017-10-05" />
+
+<title>SimmonsResearchR</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">SimmonsResearchR</h1>
+<h4 class="author"><em>Hu Yang</em></h4>
+<h4 class="date"><em>2017-10-05</em></h4>
+
+
+
+<div id="stat-match" class="section level2">
+<h2>Stat Match</h2>
+<p><strong>Statistical matching techniques</strong> aim at integrating two or more data sources (usually data from sample surveys) referred to the same target population. The final objective is that of studying the relationship of variables not jointly observed in a single data sources. The integration can be performed at micro (a synthetic of fused file is the output) or macro level (estimates of correlations, regression coefficients, contingency tables are required).</p>
+<p>The package includes the functions to wrap the functions in <a href="https://cran.r-project.org/web/packages/StatMatch/index.html">StatMatch package</a> to automate the statistical matching procedures required by Simmons Research. Although the package wraps the functions in StatMatch package, it is not just a wrapper. Compared to StatMatch package, our new functions have the following features:</p>
+<ul>
+<li>In StatMatch package, several functions such as <code>pw.assoc</code> and <code>spearman2</code> are provided to screen the match variables. But they only work for univariable. If we have multiple matching variables, we have to run those functions one by one manually, which is very tedious, let alone if there are more than 20-30 candidate variables. Our new functions provide a new pipeline based on <code>OLS</code> which can select optimal subset of the candidate matching variables and output the results spreadsheet automatically.</li>
+<li>Based on our specific requirement, the new functions provide multiple layers of the hard matching options so that the lower layer options can keep on running if the higher layer options fail, which is very flexible. In StatMatch package, to generate the same results, we have to change the setting and rerun manually which takes longer and hard to combine the final results in the same dataset.</li>
+<li>Based on our specific requirement, the new functions can run stat matching across the corresponding modules in both recipients and donors. The matching is conducted in the same module defined by a module variable. It is hard to do that and combine results together by using StatMatch package alone if we have many modules (for example &gt; 200).</li>
+<li>The new functions provide the way running stat matching parallelly which can speed up the whole process. In StatMatch package, all the process have to run serially.</li>
+<li>StatMatch package sometimes output very strange messages, the new function suppress the output of those messages.</li>
+</ul>
+<p>Two functions related to statistical matching are included in the package:</p>
+<ul>
+<li><strong>stat_match</strong> Statistical matching with StatMatch.</li>
+<li><strong>vars_redun_ols</strong> The choice of the optimal matching variables based on OLS.</li>
+<li><strong>donor_data_append</strong> Append assigned attributes from the donor file to the fused data.</li>
+</ul>
+<p>The following are the pipeline of the algorithms in the package for the statistical matching.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(StatMatch)
+<span class="kw">library</span>(dummies)
+<span class="kw">library</span>(rms)
+<span class="kw">library</span>(SimmonsResearchR)</code></pre></div>
+<p>Load the spss data and subset it into the recipient and donor data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(mag)
+
+<span class="co"># select MAG vehicles (MAG&lt;=10) for testing</span>
+rec &lt;-<span class="st"> </span>mag %&gt;%<span class="st"> </span><span class="kw">filter</span>(type==<span class="dv">1</span>, MAG&lt;=<span class="dv">10</span>)
+don &lt;-<span class="st"> </span>mag %&gt;%<span class="st"> </span><span class="kw">filter</span>(type==<span class="dv">0</span>, MAG&lt;=<span class="dv">10</span>)</code></pre></div>
+<p><strong>Practical steps in an application of statistical matching:</strong></p>
+<p>Before applying SM methods in order to integrate two or more data sources, some preprocessing steps are required.</p>
+<p>Identification of all the common variables shared by recipient and donor data. Theoritically, all the common variables can be used as the match variables. But considering the statistical/business meaning and too many matching variables can increase the complexity of the problem and potentially affect negatively the results of SM, we should limit the matching variables to the optimal subset of the common variables which can carry out a “multivariate sense”. In other words, the final matching variables should be very relavant to the variables need to be fused from donors to recipients, and contain no redundant information.</p>
+<p>After inital screening of the common variables, we have the following common variables as the candidates of the matching variables:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">match.vars   =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;NFAC1_2&quot;</span>, <span class="st">&quot;NFAC2_2&quot;</span>, <span class="st">&quot;NFAC3_2&quot;</span>, <span class="st">&quot;NFAC4_2&quot;</span>, 
+                 <span class="st">&quot;childhh&quot;</span>,<span class="st">&quot;agemid&quot;</span>, <span class="st">&quot;incmid&quot;</span>, <span class="st">&quot;ethnic&quot;</span>, 
+                 <span class="st">&quot;maritalstat&quot;</span>, <span class="st">&quot;educat&quot;</span>, <span class="st">&quot;homestat&quot;</span>, 
+                 <span class="st">&quot;employstat&quot;</span>, <span class="st">&quot;dvryes&quot;</span>, <span class="st">&quot;cabdsl&quot;</span>)</code></pre></div>
+<p>The variables need to be fused from the donor data are:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">DVList &lt;-<span class="st"> </span><span class="kw">names</span>(mag %&gt;%<span class="st"> </span><span class="kw">select</span>(<span class="kw">starts_with</span>(<span class="st">&quot;AT&quot;</span>)))
+DVList</code></pre></div>
+<pre><code>##  [1] &quot;AT1&quot;  &quot;AT2&quot;  &quot;AT3&quot;  &quot;AT4&quot;  &quot;AT5&quot;  &quot;AT6&quot;  &quot;AT7&quot;  &quot;AT8&quot;  &quot;AT9&quot;  &quot;AT10&quot;</code></pre>
+<p>We then use OLS to model those attributes in DVList by using match.vars as the independent variables. For those match.vars which appears the most in all AT models, they are more relavant to the data we need to fuse to the recipients.</p>
+<p>Divide the matching variables into factors and continuous variables. Dummy variables will be generated for those factors.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">match.var.factor &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;NFAC1_2&quot;</span>, <span class="st">&quot;NFAC2_2&quot;</span>, <span class="st">&quot;NFAC3_2&quot;</span>, <span class="st">&quot;NFAC4_2&quot;</span>, <span class="st">&quot;NFAC5_2&quot;</span>, <span class="st">&quot;NFAC6_2&quot;</span>, <span class="st">&quot;NFAC7_2&quot;</span>, <span class="st">&quot;childhh&quot;</span>, <span class="st">&quot;ethnic&quot;</span>, <span class="st">&quot;maritalstat&quot;</span>,                       <span class="st">&quot;educat&quot;</span>, <span class="st">&quot;homestat&quot;</span>, <span class="st">&quot;employstat&quot;</span>, <span class="st">&quot;dvryes&quot;</span>, <span class="st">&quot;cabdsl&quot;</span>)
+
+match.var.num &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;agemid&quot;</span>, <span class="st">&quot;incmid&quot;</span>)
+
+<span class="co">#change the types of the matching variables, only factors will be used to generate dummy variables</span>
+don &lt;-<span class="st"> </span>don %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(match.var.factor), as.factor) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(match.var.num), as.numeric) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(DVList), as.numeric) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(DVList, match.var.factor, match.var.num)</code></pre></div>
+<p>Generate dummy variables:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">don.new &lt;-<span class="st"> </span><span class="kw">dummy_recodes</span>(don, <span class="dt">drop=</span><span class="ot">TRUE</span>, <span class="dt">all=</span><span class="ot">TRUE</span>)
+
+<span class="co">#output the variables for OLS</span>
+IDVListData &lt;-<span class="st"> </span>don.new %&gt;%
+<span class="st">  </span><span class="kw">select</span>(<span class="kw">setdiff</span>(<span class="kw">names</span>(don.new), <span class="kw">c</span>(DVList))) %&gt;%
+<span class="st">  </span><span class="kw">slice</span>(<span class="dv">1</span>)
+
+IDVList &lt;-<span class="st"> </span><span class="kw">names</span>(IDVListData)
+IDVList</code></pre></div>
+<pre><code>##  [1] &quot;agemid&quot;        &quot;incmid&quot;        &quot;NFAC1_2_1&quot;     &quot;NFAC1_2_2&quot;    
+##  [5] &quot;NFAC2_2_2&quot;     &quot;NFAC2_2_3&quot;     &quot;NFAC3_2_1&quot;     &quot;NFAC3_2_2&quot;    
+##  [9] &quot;NFAC4_2_1&quot;     &quot;NFAC4_2_2&quot;     &quot;NFAC5_2_1&quot;     &quot;NFAC5_2_3&quot;    
+## [13] &quot;NFAC6_2_1&quot;     &quot;NFAC6_2_3&quot;     &quot;NFAC7_2_1&quot;     &quot;NFAC7_2_2&quot;    
+## [17] &quot;childhh_2&quot;     &quot;ethnic_1&quot;      &quot;ethnic_2&quot;      &quot;ethnic_4&quot;     
+## [21] &quot;maritalstat_1&quot; &quot;educat_2&quot;      &quot;educat_3&quot;      &quot;homestat_1&quot;   
+## [25] &quot;employstat_1&quot;  &quot;dvryes_1&quot;      &quot;cabdsl_1&quot;</code></pre>
+<p>Run OLS models to select matching variables</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">vars_redun_ols</span>(<span class="dt">data=</span>don.new, <span class="dt">DVList =</span> DVList, <span class="dt">IDVList =</span> IDVList)</code></pre></div>
+<pre><code>## Variable(s)  educat_3 ethnic_2  are excluded because of multicolinearity!
+## Modeling dependent variables: 
+## AT1  AT2  AT3  AT4  AT5  AT6  AT7  AT8  AT9  AT10</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr::<span class="kw">kable</span>(results, <span class="dt">caption =</span> <span class="st">&quot;Variables Importance&quot;</span>) </code></pre></div>
+<table>
+<caption>Variables Importance</caption>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NFAC1_2_1</td>
+<td align="right">10</td>
+</tr>
+<tr class="even">
+<td align="left">NFAC2_2_3</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC3_2_1</td>
+<td align="right">10</td>
+</tr>
+<tr class="even">
+<td align="left">NFAC4_2_1</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC6_2_1</td>
+<td align="right">10</td>
+</tr>
+<tr class="even">
+<td align="left">dvryes_1</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC2_2_2</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="left">agemid</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC1_2_2</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">NFAC5_2_3</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC7_2_1</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="left">employstat_1</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC3_2_2</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">childhh_2</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC4_2_2</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">NFAC6_2_3</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">incmid</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">cabdsl_1</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnic_4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">homestat_1</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">NFAC7_2_2</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">educat_2</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<p>Based on the <code>Variable Importance</code> above, we many consider remove “educat”, “homestat”, “ethnic”, “cabdsl” and “incmid” from the matching variable list. The new matching variables are:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">match.vars   =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;NFAC1_2&quot;</span>, <span class="st">&quot;NFAC2_2&quot;</span>, <span class="st">&quot;NFAC3_2&quot;</span>, <span class="st">&quot;NFAC4_2&quot;</span>, 
+                 <span class="st">&quot;childhh&quot;</span>,<span class="st">&quot;agemid&quot;</span>, <span class="st">&quot;maritalstat&quot;</span>, <span class="st">&quot;employstat&quot;</span>, <span class="st">&quot;dvryes&quot;</span>)</code></pre></div>
+<p>After select the optimal matching variables, we can run stat_match directly:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rec &lt;-<span class="st"> </span>mag %&gt;%<span class="st"> </span><span class="kw">filter</span>(type==<span class="dv">1</span>, MAG&lt;=<span class="dv">10</span>)
+don &lt;-<span class="st"> </span>mag %&gt;%<span class="st"> </span><span class="kw">filter</span>(type==<span class="dv">0</span>, MAG&lt;=<span class="dv">10</span>)
+
+<span class="kw">system.time</span>(out.nnd.c &lt;-<span class="st"> </span><span class="kw">stat_match</span>(<span class="dt">data.rec=</span>rec,
+                         <span class="dt">data.don=</span>don,
+                         <span class="dt">rec.id=</span><span class="st">&quot;BOOK_ID&quot;</span>,
+                         <span class="dt">don.id=</span><span class="st">&quot;RESPID&quot;</span>, 
+                         <span class="dt">match.vars=</span>match.vars,
+                         <span class="dt">don.class=</span><span class="kw">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;WhiteNH&quot;</span>),
+                         <span class="dt">k =</span> <span class="dv">50</span>,
+                         <span class="dt">constrained=</span>T))</code></pre></div>
+<pre><code>## Initialize stat matching ...
+## 
+## method not assigned, 'NNK.hotdeck' will be used. 
+## dist.fun not assigned, 'Manhattan' distance will be used. 
+## constr.alg not assigned, 'lpSolve' algorithm will be used. 
+## 
+## Summary:
+## Recipient data size: ( 9552 , 13 )
+## Donor data size: ( 3207 , 13 )
+## The ratio (no. recs)/(no. dons): 2.978485 
+## constrained = TRUE 
+## constr.alg = lpSolve 
+## k = 50 
+## method = NNK.hotdecks 
+## dist.fun = Manhattan 
+## Match variables: NFAC1_2 NFAC2_2 NFAC3_2 NFAC4_2 childhh agemid maritalstat employstat dvryes 
+## Don.class: age gender WhiteNH 
+## Don.class2: 
+## Don.class3: 
+## by.var: 
+## parallel: FALSE 
+## suppresswarningFlag: TRUE 
+## 
+## Start stat matching ...</code></pre>
+<pre><code>##    user  system elapsed 
+##  149.81    0.95  152.59</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(out.nnd.c$MatchLevel)</code></pre></div>
+<pre><code>## 
+##    1 
+## 9552</code></pre>
+<p>Or we can run stat_match in a hierarchy way. During the process of stat matching, our (Simmons Stat) criterias require three levels hard matching options (Options can be changed based on requirements):</p>
+<ul>
+<li>Option 1: Gender (1=Male, 2=Female), Age (1=18-34, 2=35-54, 55+), WhiteNH (1=White &amp; non-Hispanic, 2=Other).</li>
+<li>Option 2: Gender (1=Male, 2=Female), Age (1=18-34, 2=35-54, 55+).</li>
+<li>Option 3: Gender (1=Male, 2=Female).</li>
+</ul>
+<p>and the functions run through all the following steps:</p>
+<ul>
+<li>Run stat match with primary common variable (option 1) with constrain, if successful, return the matched data.</li>
+<li>If above step fails, rerun stat match with primary common variable (option 2) with constrain, if successful, return the matched data.</li>
+<li>If above step fails, rerun stat match with primary common variable (option 2) without constrain, if successful, return the matched data.</li>
+<li>If above step fails, use Gender (option 3) as the primary common variable and rerun without constrain.</li>
+<li>If above steps fail, random select donors to the recipents (This rarely happens).</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">group.v =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;WhiteNH&quot;</span>)
+group.v2 =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;gender&quot;</span>)
+group.v3 =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;gender&quot;</span>)
+
+<span class="kw">system.time</span>(out.nnd.c &lt;-<span class="st"> </span><span class="kw">stat_match</span>(<span class="dt">data.rec=</span>rec,
+                         <span class="dt">data.don=</span>don,
+                         <span class="dt">rec.id=</span><span class="st">&quot;BOOK_ID&quot;</span>,
+                         <span class="dt">don.id=</span><span class="st">&quot;RESPID&quot;</span>, 
+                         <span class="dt">match.vars=</span>match.vars,
+                         <span class="dt">don.class=</span>group.v,
+                         <span class="dt">don.class2=</span>group.v2,
+                         <span class="dt">don.class3=</span>group.v3,
+                         <span class="dt">k =</span> <span class="dv">50</span>,
+                         <span class="dt">constrained=</span>T))</code></pre></div>
+<pre><code>## Warning in .Internal(gc(verbose, reset)): closing unused connection 5
+## (tmp.txt)</code></pre>
+<pre><code>## Initialize stat matching ...
+## 
+## method not assigned, 'NNK.hotdeck' will be used. 
+## dist.fun not assigned, 'Manhattan' distance will be used. 
+## constr.alg not assigned, 'lpSolve' algorithm will be used. 
+## 
+## Summary:
+## Recipient data size: ( 9552 , 13 )
+## Donor data size: ( 3207 , 13 )
+## The ratio (no. recs)/(no. dons): 2.978485 
+## constrained = TRUE 
+## constr.alg = lpSolve 
+## k = 50 
+## method = NNK.hotdecks 
+## dist.fun = Manhattan 
+## Match variables: NFAC1_2 NFAC2_2 NFAC3_2 NFAC4_2 childhh agemid maritalstat employstat dvryes 
+## Don.class: age gender WhiteNH 
+## Don.class2: age gender 
+## Don.class3: gender 
+## by.var: 
+## parallel: FALSE 
+## suppresswarningFlag: TRUE 
+## 
+## Start stat matching ...</code></pre>
+<pre><code>##    user  system elapsed 
+##  157.05    0.97  161.39</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(out.nnd.c$MatchLevel)     </code></pre></div>
+<pre><code>## 
+##    1 
+## 9552</code></pre>
+<p>Based on my experience, the main reason the stat match fails is because the ratio of recipients Vs. donors in the segments defined by hard matching options is too high. When we use low level hard matching options, the ratio would decrease which make the stat matching more likely to be successful.</p>
+<p>On top of the above, a module variable (by.var) can be added so that stat match can run across the corresponding modules in both recipients and donors. The matching is conducted in the same module defined by by.var.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(out.nnd.c &lt;-<span class="st"> </span><span class="kw">stat_match</span>(<span class="dt">data.rec=</span>rec,
+                         <span class="dt">data.don=</span>don,
+                         <span class="dt">rec.id=</span><span class="st">&quot;BOOK_ID&quot;</span>,
+                         <span class="dt">don.id=</span><span class="st">&quot;RESPID&quot;</span>, 
+                         <span class="dt">match.vars=</span>match.vars,
+                         <span class="dt">don.class=</span>group.v,
+                         <span class="dt">don.class2=</span>group.v2,
+                         <span class="dt">don.class3=</span>group.v3,
+                         <span class="dt">by.var =</span> <span class="st">&quot;MAG&quot;</span>,
+                         <span class="dt">k =</span> <span class="dv">50</span>,
+                         <span class="dt">constrained=</span>T))</code></pre></div>
+<pre><code>## Warning in .Internal(gc(verbose, reset)): closing unused connection 5
+## (tmp.txt)</code></pre>
+<pre><code>## Initialize stat matching ...
+## 
+## method not assigned, 'NNK.hotdeck' will be used. 
+## dist.fun not assigned, 'Manhattan' distance will be used. 
+## constr.alg not assigned, 'lpSolve' algorithm will be used. 
+## 
+## Summary:
+## Recipient data size: ( 9552 , 14 )
+## Donor data size: ( 3207 , 14 )
+## The ratio (no. recs)/(no. dons): 2.978485 
+## constrained = TRUE 
+## constr.alg = lpSolve 
+## k = 50 
+## method = NNK.hotdecks 
+## dist.fun = Manhattan 
+## Match variables: NFAC1_2 NFAC2_2 NFAC3_2 NFAC4_2 childhh agemid maritalstat employstat dvryes 
+## Don.class: age gender WhiteNH 
+## Don.class2: age gender 
+## Don.class3: gender 
+## by.var: MAG 
+## parallel: FALSE 
+## suppresswarningFlag: TRUE 
+## 
+## Start stat matching ... 
+## MAG = 1 
+## MAG = 2 
+## MAG = 3 
+## MAG = 4 
+## MAG = 5 
+## MAG = 6 
+## MAG = 7 
+## MAG = 8 
+## MAG = 9</code></pre>
+<pre><code>##    user  system elapsed 
+##   17.45    0.40   20.36</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(out.nnd.c$MatchLevel)</code></pre></div>
+<pre><code>## 
+##    1    2 
+## 6480 3072</code></pre>
+<p>As we can see, 6480 recipients match to the donors at level 1 (group.v), and 3072 recipients match to the donors at level 2 (group.v2).</p>
+<p>After establishing the relationship between recipients and donors based on stat matching, we can then fuse the dependent variables from the donors to the recipients.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">append_donor_data</span>(<span class="dt">data.fuse=</span>out.nnd.c, <span class="dt">data.don=</span>don, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;RESPID&quot;</span>,<span class="st">&quot;MAG&quot;</span>), <span class="dt">vars=</span>DVList)
+<span class="kw">glimpse</span>(out.nnd.c)</code></pre></div>
+<pre><code>## Observations: 9,552
+## Variables: 17
+## $ BOOK_ID     &lt;dbl&gt; 2503805, 2504044, 2512057, 2513207, 2518607, 25189...
+## $ NFAC1_2     &lt;dbl&gt; 2, 2, 1, 3, 2, 1, 3, 3, 2, 1, 2, 1, 2, 1, 3, 1, 2,...
+## $ NFAC2_2     &lt;dbl&gt; 2, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 3, 1, 2,...
+## $ NFAC3_2     &lt;dbl&gt; 2, 2, 2, 3, 1, 2, 1, 2, 2, 3, 2, 2, 2, 1, 1, 3, 2,...
+## $ NFAC4_2     &lt;dbl&gt; 2, 2, 1, 1, 3, 3, 2, 2, 1, 1, 1, 3, 1, 2, 1, 1, 2,...
+## $ childhh     &lt;dbl&gt; 2, 2, 2, 2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 1, 2, 1,...
+## $ agemid      &lt;dbl&gt; 23, 32, 18, 27, 27, 27, 23, 32, 32, 20, 18, 18, 27...
+## $ maritalstat &lt;dbl&gt; 2, 2, 2, 2, 1, 2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2,...
+## $ employstat  &lt;dbl&gt; 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1,...
+## $ dvryes      &lt;dbl&gt; 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 2, 1, 1,...
+## $ age         &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,...
+## $ gender      &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,...
+## $ WhiteNH     &lt;dbl&gt; 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2,...
+## $ MAG         &lt;dbl&gt; 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,...
+## $ by.var.new  &lt;chr&gt; &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, ...
+## $ RESPID      &lt;dbl&gt; 21219, 4772, 32479, 21219, 30975, 30975, 32495, 82...
+## $ MatchLevel  &lt;dbl&gt; 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,...</code></pre>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

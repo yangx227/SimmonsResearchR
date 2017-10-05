@@ -1,0 +1,62 @@
+---
+title: "SimmonsResearchR"
+author: "Hu Yang"
+date: "August 28, 2017"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SimmonsResearchR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## DiffCompare
+
+Two functions are included to compare datasets and save the results to the EXCEL spreadsheet.
+
+* **diff_compare** compares two datasets based on the common variables. Those variables are provided as a parameter to the function. Relative change, ZTest, TTest will be checked. Each comparison has its unique segment identifier.
+
+    - For relative change, all variables are categoriezed into binary variables. If the absolute value of the relative change (percent) is higher than threshold (default 0.05) and absolute value of the delta is larger than 0.01, then that level is identified as significant of change.
+
+    - For ZTest, all variables are categorized into binary variables. Each binary variable is conducted proportional z-test. If z-value is larger than 1.96 (at 95% significant level), then that level is identified as significant of change.
+
+    - For TTest, all variables are conducted ttest. For any variable, if p-value is less than 0.05, then that variable is identified as significant of change.
+
+* **combine_comparison_results** Combine the comparison results into one excel spreadsheet.
+    - Any number of the comparing results from `diff_compare` can be combined into one spreadsheet. The suffix of the tab is the segment identifier.
+   
+**Examples:**
+```{r, message=FALSE, eval=FALSE}
+
+library(SimmonsResearchR)
+
+# varlist is the variable list to test
+res1 <- diff_compare(dat1=data.baseline, 
+                     dat2=data.primary, 
+                     wgt1=PERS_WGT, 
+                     wgt2=PERS_WGT, 
+                     varlist=varlist, 
+                     segment="SEGID1")
+
+res2 <- diff_compare(dat1=data.primary, 
+                     dat2=data.president.election, 
+                     wgt1=PERS_WGT, 
+                     wgt2=PERS_WGT, 
+                     varlist=varlist, 
+                     segment="SEGID2")
+
+res3 <- diff_compare(dat1=data.president.election, 
+                     dat2=data.post.election, 
+                     wgt1=PERS_WGT, 
+                     wgt2=PERS_WGT, 
+                     varlist=varlist, 
+                     segment="SEGID3")
+
+# combine SEGID1, SEGID2 and SEGID3, and save to spreadsheet "output.xlsx""
+combine_comparison_results("output.xlsx", res1, res2, res3)
+
+
+```    

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Hu Yang" />
+
+<meta name="date" content="2017-10-05" />
+
+<title>Sample Balancing</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Sample Balancing</h1>
+<h4 class="author"><em>Hu Yang</em></h4>
+<h4 class="date"><em>2017-10-05</em></h4>
+
+
+
+<div id="sample-balancing" class="section level2">
+<h2>Sample Balancing</h2>
+<p>The goal of the “<strong>Sample Balancing</strong>” module is to provide a weight for each respondent in the sample such that the weighted marginals on each of a set of characteristics matches preset values of those marginals. This process is sometimes called “raking” or “rim weighting.”</p>
+<p>The most common procedure used to produce these weights is “<em>iterative proportional fitting</em>”, a procedure devised by <em>W. Edwards Deming</em> and <em>Frederick F. Stephan</em>, which is the current algorithm used by Simmons.</p>
+<p>The new functions are based on current sample balancing functions used at Simmons, but with lots of modifications. Compared to original version, the new features include:</p>
+<ul>
+<li><p>Originally, we need to hard copy target weights, labels, names to R codes, which is very tedious when lots sample balancing modules involved. Now the new functions can read those information directly from a spreadsheet (see the layout below) which makes the data input more efficient and avoid mistakes.</p></li>
+<li><p>Originally, algorithm only uses 6 times mean as the cap. Now new functions can use n times mean plus mean +/- (n times std) as the caps.</p></li>
+<li><p>A randomization option provided. We can choose to randomize the data based on ID before sample balancing.</p></li>
+<li><p>A new function called <code>sample_balance_init</code> encapusulates the data preprocessing steps, which simplfys the codes of sample balancing process, and avoid some unnecessary steps such as ID, weights have to be positioned in certain columns.</p></li>
+<li><p>New functions can output the results of sample balancing automatically to spreadsheet which avoids lots of unnecessary copy/paste works.</p></li>
+<li><p>Lots of additional minor modifications.</p></li>
+</ul>
+<p>Two functions related to sample balancing are included in the package:</p>
+<ul>
+<li><p><strong>sample_balance_init</strong> Initialize sample balance process.</p></li>
+<li><p><strong>sample_balance</strong> Run sample balance module by iterative raking algorithm.</p></li>
+</ul>
+<p><strong>Examples</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># load the libraries</span>
+<span class="kw">library</span>(haven)
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(openxlsx)
+<span class="kw">library</span>(SimmonsResearchR)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># read the data</span>
+DatIn &lt;-<span class="st"> </span><span class="kw">read_sav</span>(<span class="st">&quot;W50123 AdultMasterDemoFile SB v2.sav&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(WAVE_ID %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">'1516'</span>, <span class="st">'1616'</span>))
+
+<span class="co"># read targ file which is a spreadsheet contains targ information</span>
+targ &lt;-<span class="st"> </span><span class="kw">read.xlsx</span>(<span class="st">&quot;targ.xlsx&quot;</span>)
+
+<span class="co"># subset the data</span>
+work1.new &lt;-<span class="st"> </span>DatIn %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(group==<span class="dv">1</span>,
+         dma %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">501</span>, <span class="dv">504</span>, <span class="dv">505</span>, <span class="dv">506</span>, <span class="dv">510</span>, <span class="dv">511</span>, <span class="dv">524</span>, <span class="dv">528</span>, <span class="dv">602</span>, <span class="dv">618</span>, <span class="dv">623</span>, <span class="dv">641</span>, <span class="dv">803</span>, <span class="dv">807</span>))
+
+work2.new &lt;-<span class="st"> </span>DatIn %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(group==<span class="dv">3</span>,
+         dma %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">501</span>, <span class="dv">504</span>, <span class="dv">505</span>, <span class="dv">506</span>, <span class="dv">510</span>, <span class="dv">511</span>, <span class="dv">524</span>, <span class="dv">528</span>, <span class="dv">602</span>, <span class="dv">618</span>, <span class="dv">623</span>, <span class="dv">641</span>, <span class="dv">803</span>, <span class="dv">807</span>)) 
+
+work1.wgt &lt;-<span class="st"> </span>work1.new[[<span class="st">&quot;DESIGN_WGT&quot;</span>]] /<span class="dv">2</span> 
+work2.wgt &lt;-<span class="st"> </span>work2.new[[<span class="st">&quot;DESIGN_WGT&quot;</span>]] /<span class="dv">2</span> 
+
+<span class="co"># Initialize sample balance, save targ information to plan text file</span>
+targs.list &lt;-<span class="st"> </span><span class="kw">sample_balance_init</span>(<span class="dt">data=</span>DatIn, <span class="dt">targ=</span>targ, <span class="dt">out=</span><span class="st">&quot;targ.txt&quot;</span>)
+
+<span class="co"># sample balancing using 6 times mean cap, and save diagnosis information to out1.xlsx</span>
+sb1 &lt;-<span class="st"> </span><span class="kw">sample_blance</span>(<span class="dt">data=</span>work1.new, 
+                     <span class="dt">ID=</span><span class="st">&quot;BOOK_ID&quot;</span>,
+                     <span class="dt">targstr=</span>targs.list[[<span class="dv">1</span>]],
+                     <span class="dt">dweights=</span>work1.wgt,
+                     <span class="dt">cap=</span>T,
+                     <span class="dt">typeofcap=</span><span class="dv">1</span>,
+                     <span class="dt">capval=</span><span class="dv">6</span>,
+                     <span class="dt">floor=</span>T,
+                     <span class="dt">floorval=</span><span class="dv">50</span>,
+                     <span class="dt">eps=</span>.<span class="dv">001</span>,
+                     <span class="dt">rounding=</span>F,
+                     <span class="dt">klimit=</span>F,
+                     <span class="dt">klimitval=</span><span class="ot">Inf</span>, 
+                     <span class="dt">out=</span><span class="st">&quot;out1.xlsx&quot;</span>)
+
+<span class="co"># sample balancing using 2 times std cap, and save diagnosis information to out2.xlsx</span>
+sb2 &lt;-<span class="st"> </span><span class="kw">sample_blance</span>(<span class="dt">data=</span>work2.new, 
+                     <span class="dt">ID=</span><span class="st">&quot;BOOK_ID&quot;</span>,
+                     <span class="dt">targstr=</span>targs.list[[<span class="dv">2</span>]],
+                     <span class="dt">dweights=</span>work2.wgt,
+                     <span class="dt">cap=</span>T,
+                     <span class="dt">typeofcap=</span><span class="dv">2</span>,
+                     <span class="dt">capval=</span><span class="dv">2</span>,
+                     <span class="dt">floor=</span>T,
+                     <span class="dt">floorval=</span><span class="dv">50</span>,
+                     <span class="dt">eps=</span>.<span class="dv">001</span>,
+                     <span class="dt">rounding=</span>F,
+                     <span class="dt">klimit=</span>F,
+                     <span class="dt">klimitval=</span><span class="ot">Inf</span>, 
+                     <span class="dt">out=</span><span class="st">&quot;out2.xlsx&quot;</span>)
+
+<span class="co"># Get new capped weights from the 2 sample balancing modules</span>
+cap_wgt1&lt;-sb1[[<span class="dv">2</span>]]
+cap_wgt2&lt;-sb2[[<span class="dv">2</span>]]</code></pre></div>
+<p><strong>Note</strong>:</p>
+<ul>
+<li><p>because the raking algorithm is an iterative algorithm, when we change the order of each obs in the dataset or the order of raking variables, the output of new weights will be slightly different.</p></li>
+<li><p>because new weight vector is keep on updating in each iteration. So even the final weight vector’s maximum value is caped, it’s minimum value may not be the same as the minimum of the original weights if no minimum limitation applied or the minimum value is larger than the minimum limitation.</p></li>
+</ul>
+<p><strong>Example</strong> of the targ spreadsheet is listed below. <code>Age</code>, <code>race</code>, <code>F6A10A</code>, <code>F10A3P</code>, <code>F3P7P</code>, <code>S6A12A</code>, <code>M-S Prime</code> and <code>M-S All Day</code> are used as sample balancing variables. There are 4 sample balancing modules to be conducted.</p>
+<table>
+<caption>Example of the Targ Spreadsheet</caption>
+<thead>
+<tr class="header">
+<th align="right">Targ</th>
+<th align="left">Variable</th>
+<th align="left">Name</th>
+<th align="left">Label</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">18-24</td>
+<td align="right">3422290</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">25-34</td>
+<td align="right">5365353</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">35-44</td>
+<td align="right">5330448</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">45-54</td>
+<td align="right">6086172</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">55-64</td>
+<td align="right">5909614</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">65-74</td>
+<td align="right">3817900</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">75+</td>
+<td align="right">2303590</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">White</td>
+<td align="right">21933598</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Black</td>
+<td align="right">5493028</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Asian</td>
+<td align="right">4285624</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">OtherRace</td>
+<td align="right">523117</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">User</td>
+<td align="right">15156895</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">Non-User</td>
+<td align="right">17078472</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">User</td>
+<td align="right">10952685</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">Non-User</td>
+<td align="right">21282682</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">User</td>
+<td align="right">13919025</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">Non-User</td>
+<td align="right">18316342</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">User</td>
+<td align="right">23681199</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">Non-User</td>
+<td align="right">8554168</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">User</td>
+<td align="right">21912229</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">Non-User</td>
+<td align="right">10323138</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">User</td>
+<td align="right">26921567</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">Non-User</td>
+<td align="right">5313800</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">18-24</td>
+<td align="right">3410104</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">25-34</td>
+<td align="right">5654938</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">35-44</td>
+<td align="right">5694762</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">45-54</td>
+<td align="right">6476076</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">55-64</td>
+<td align="right">6412864</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">65-74</td>
+<td align="right">4423504</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">75+</td>
+<td align="right">3388995</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">White</td>
+<td align="right">23323264</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Black</td>
+<td align="right">6790264</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Asian</td>
+<td align="right">4782848</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">OtherRace</td>
+<td align="right">564867</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">User</td>
+<td align="right">17262377</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">Non-User</td>
+<td align="right">18198866</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">User</td>
+<td align="right">13777598</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">Non-User</td>
+<td align="right">21683645</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">User</td>
+<td align="right">16096652</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">Non-User</td>
+<td align="right">19364591</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">User</td>
+<td align="right">27138555</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">Non-User</td>
+<td align="right">8322688</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">User</td>
+<td align="right">25804450</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">Non-User</td>
+<td align="right">9656793</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">User</td>
+<td align="right">31166747</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">Non-User</td>
+<td align="right">4294496</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">18-24</td>
+<td align="right">7494522</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">25-34</td>
+<td align="right">10606095</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">35-44</td>
+<td align="right">10218022</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">45-54</td>
+<td align="right">11249639</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">55-64</td>
+<td align="right">11821197</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">65-74</td>
+<td align="right">8570247</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">75+</td>
+<td align="right">5152059</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">White</td>
+<td align="right">53666431</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Black</td>
+<td align="right">7565408</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Asian</td>
+<td align="right">2266615</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">OtherRace</td>
+<td align="right">1613327</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">User</td>
+<td align="right">30162821</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">Non-User</td>
+<td align="right">34948960</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">User</td>
+<td align="right">23461772</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">Non-User</td>
+<td align="right">41650009</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">User</td>
+<td align="right">29951577</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">Non-User</td>
+<td align="right">35160204</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">User</td>
+<td align="right">45875944</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">Non-User</td>
+<td align="right">19235837</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">User</td>
+<td align="right">45069355</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">Non-User</td>
+<td align="right">20042426</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">User</td>
+<td align="right">56581456</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">Non-User</td>
+<td align="right">8530325</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">18-24</td>
+<td align="right">7326861</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">25-34</td>
+<td align="right">10899186</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">35-44</td>
+<td align="right">10651283</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">45-54</td>
+<td align="right">11833032</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">55-64</td>
+<td align="right">12782285</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">65-74</td>
+<td align="right">9610251</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">age_sb</td>
+<td align="left">Age</td>
+<td align="left">75+</td>
+<td align="right">7145374</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">White</td>
+<td align="right">56750571</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Black</td>
+<td align="right">8896821</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">Asian</td>
+<td align="right">2707469</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">race_sb</td>
+<td align="left">Race</td>
+<td align="left">OtherRace</td>
+<td align="right">1893411</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">User</td>
+<td align="right">30823766</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">RD_MF6A10A</td>
+<td align="left">M-F6A10A</td>
+<td align="left">Non-User</td>
+<td align="right">39424506</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">User</td>
+<td align="right">24535366</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">RD_MF10A3P</td>
+<td align="left">M-F10A3P</td>
+<td align="left">Non-User</td>
+<td align="right">45712906</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">User</td>
+<td align="right">31573188</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">RD_MF3P7P</td>
+<td align="left">M-F3P7P</td>
+<td align="left">Non-User</td>
+<td align="right">38675084</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">User</td>
+<td align="right">50809123</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">RD_MS6A12A</td>
+<td align="left">M-S6A12A</td>
+<td align="left">Non-User</td>
+<td align="right">19439149</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">User</td>
+<td align="right">51829868</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">TV_MSPRIME</td>
+<td align="left">M-S Prime</td>
+<td align="left">Non-User</td>
+<td align="right">18418404</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">User</td>
+<td align="right">62107227</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">TV_MSALLDAY</td>
+<td align="left">M-S All Day</td>
+<td align="left">Non-User</td>
+<td align="right">8141045</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
